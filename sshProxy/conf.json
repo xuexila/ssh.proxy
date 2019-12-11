@@ -1,0 +1,32 @@
+{
+  "addr":[
+    {
+      "saddr":"120.28.22.113:22", // 远程转发
+      "user": "root",
+      "type": 2,
+      "passwd": ".ssh/auth",
+      "connect": "R",
+      "remote": "127.0.0.1:12345",
+      "listen": "127.0.0.1:12345"
+    },
+    {
+      "saddr":"120.28.22.113:22", // 本地转发
+      "user": "root",
+      "type": 1,
+      "passwd": "test12345",
+      "connect": "L",
+      "remote": "120.28.23.113:22",
+      "listen": "127.0.0.1:6001",
+      "son": [
+        {
+          "saddr":"127.0.0.1:6001", // 动态转发
+          "user": "root",
+          "type": 2,
+          "passwd": ".ssh/auth_key",
+          "connect": "D",
+          "listen": "127.0.0.1:60122"
+        }
+      ]
+    }
+  ]
+}
