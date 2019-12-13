@@ -59,13 +59,16 @@ func (i *connect) socks5Proxy(conn net.Conn) {
 		}
 		addr = fmt.Sprintf("%s:%d", host, port)
 	}
-
+	if i.client==nil {
+		i.login(true)
+	}
 	server, err := i.client.Dial("tcp", addr)
 	defer func() {
 		if server!=nil {
 			_=server.Close()
 		}
 	}()
+
 	if err != nil {
 		common.Error("动态转发连接目标失败",err.Error())
 		return
@@ -83,6 +86,9 @@ func (i *connect) localForward(conn net.Conn){
 			_ = conn.Close()
 		}
 	}()
+	if i.client==nil {
+		i.login(true)
+	}
 	server, err := i.client.Dial("tcp", i.Remote)
 	defer func() {
 		if server!=nil {
@@ -141,6 +147,9 @@ func (ip sockIP) toAddr() string {
 // 远程转发
 func (i *connect) remoteForward(){
 	common.Log("远程转发端口监听",i.Remote)
+	if i.client==nil {
+		i.login(true)
+	}
 	server, err :=i.client.Listen("tcp",i.Remote)
 	if err != nil {
 		common.Error("建立远程端口失败",i.Remote,err.Error())

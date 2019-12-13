@@ -8,30 +8,31 @@ import (
 	"workspace/many.program/code/common"
 )
 
-func init(){
+func init() {
 	initParams()
 	loadConfig()
 }
 
-func loadConfig(){
-	by,err:=ioutil.ReadFile(common.Cpath)
-	if err!=nil {
-		common.Error("读取配置文件失败",err.Error())
+func loadConfig() {
+	by, err := ioutil.ReadFile(common.Cpath)
+	if err != nil {
+		common.Error("读取配置文件失败", err.Error())
 		os.Exit(1)
 	}
-	if err=json.Unmarshal(by,conf);err!=nil {
-		common.Error("解析配置文件失败",err.Error())
+	if err = json.Unmarshal(by, conf); err != nil {
+		common.Error("解析配置文件失败", err.Error())
 		os.Exit(1)
 	}
-	if len(conf.Addr)<1 {
+	if len(conf.Addr) < 1 {
 		common.Error("无代理配置")
 		os.Exit(1)
 	}
 }
 
-func initParams(){
+func initParams() {
 	flag.BoolVar(&common.H, "h", false, "帮助说明")
-	flag.Int64Var(&retime,"r",10,"连接中断后重新连接的等待时间")
+	flag.Int64Var(&retime, "r", 10, "连接中断后重新连接的等待时间")
+	flag.Int64Var(&heartbeattime, "t", 3, "ssh连接状态检测")
 	flag.StringVar(&common.Cpath, "c", "conf.json", "系统配置文件")
 	flag.Parse()
 	if common.H {
