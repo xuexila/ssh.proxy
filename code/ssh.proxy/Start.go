@@ -22,16 +22,18 @@ func startAction(addrs []connect) {
 			item.config()
 			common.Log("连接目标机器", item.Saddr)
 			item.client = new(ssh.Client)
-			item.client, err = ssh.Dial("tcp", item.Saddr, item.sshConfig)
 			defer func() {
 				if item.client != nil {
 					_ = item.client.Close()
 				}
 			}()
-			if err != nil {
-				common.Error("连接远程服务器", item.Saddr, "失败", err.Error())
-				os.Exit(1)
-			}
+			item.login(false)
+			go func() {
+				for{
+					item.heartbeat()
+					time.Sleep(time.Duration(heartbeattime)*time.Second)
+				}
+			}()
 			common.Log("服务器", item.Saddr, "连接成功")
 			switch item.Connect {
 			case "R": // 远程转发
@@ -57,6 +59,36 @@ func startAction(addrs []connect) {
 		}(item)
 
 	}
+}
+
+// 登陆远程服务器
+func (i *connect) login(relogin bool)  {
+	for{
+		i.client, err = ssh.Dial("tcp", i.Saddr, i.sshConfig)
+		if err==nil {
+			break
+		}
+		if !relogin {
+			common.Error("连接远程服务器", i.Saddr, "失败", err.Error())
+			os.Exit(1)
+		}
+		common.Error("尝试重新连接",i.Saddr,err)
+		time.Sleep(time.Duration(heartbeattime)*time.Second)
+	}
+}
+
+func (i *connect) heartbeat(){
+	s,err:=i.client.NewSession()
+	defer func() {
+		if s!=nil {
+			_=s.Close()
+		}
+	}()
+	if err!=nil {
+		i.login(true)
+		return
+	}
+	_=s.Run("")
 }
 
 // 配置登陆配置
